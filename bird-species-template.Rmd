@@ -39,11 +39,16 @@ Before we begin, the book gives us some instructions to select a few key variabl
 
 ```{r}
 # Get the data table & clean up dates (see Data Computing eBook)
-
+OrdwayBirds <-
+  OrdwayBirds %>%
+  select( SpeciesName, Month, Day ) %>%
+  mutate( Month = as.numeric(as.character(Month)), 
+          Day = as.numeric(as.character(Day)))
 
 
 # Inspect resulting data
-
+View(OrdwayBirds)
+summary("OrdwayBird")
 
 ```
 
@@ -56,7 +61,8 @@ Before we begin, the book gives us some instructions to select a few key variabl
 
 ```{r}
 # unique species in original data (including mis-spellings)
-
+OrdwayBirds %>%
+  n_distinct("SpeciesName", na.rm = TRUE)
 
 
 # unique species in the clean list
@@ -76,12 +82,16 @@ Before we begin, the book gives us some instructions to select a few key variabl
 
 
 # inner join
-
+Corrected <-
+  OrdwayBirds %>%
+  inner_join( OrdwaySpeciesNames ) %>% 
+  select( Species = SpeciesNameCleaned, Month, Day ) %>%
+  na.omit()  # cleaned up the missing ones
 
 
 
 # inspect the data after the join
-
+View(OrdwayBirds)
 
 ```
 
@@ -93,11 +103,13 @@ We want to identify the top 5-6 bird species sighted at the Katherine Ordway Nat
 ```{r}
 # count sightings by species in descending order
 
-
+species_desc <-
+  OrdwayBirds %>%
+  count(SpeciesName, sort = TRUE)
 
 
 # a hint in the text book recommends displaying the top 10 species to choose our threshold
-
+head(species_desc, n = 10)
 
 
 # define a sightings threshold; produce a table with only birds belonging to major species
@@ -130,8 +142,8 @@ ByMonth %>%
   ggplot(aes(x = Month, y = count, color = Species)) + 
   geom_line()
 
-ByMonth %>% ggplot(aes(x=Month,y=count ,fill=Species)) +
-  geom_bar(stat='identity',position='stack', width=.9) 
+ByMonth %>% ggplot(aes(x = Month,y = count ,fill = Species)) +
+  geom_bar(stat = 'identity',position = 'stack', width = .9) 
 
 ```
 
