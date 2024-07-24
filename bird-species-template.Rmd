@@ -119,7 +119,7 @@ head(species_desc, n = 10)
 
 # define a sightings threshold; produce a table with only birds belonging to major species
 
-sightings_threshold <- 600
+sightings_threshold <- 550
 Majors <- 
   species_desc %>%
   filter(count >= sightings_threshold)
@@ -179,34 +179,14 @@ According to the graph, we can answer the questions posed:
 ##### 3. What is the peak month for each major species? (bullet list)
 # Peack month for each of the species:
 # American Goldfinch: 10			
-# Black-capped Chickadee: 11			
+# Black-capped Chickadee: 11		
+# Catbird: 5
+# Field Sparrow: 5
 # Robin: 5			
 # Slate-colored Junco: 10
 
 
 ##### 4. Which major species are seen in good numbers for at least 6 months of the year?
-# All the species(American Goldfinch, Black-capped Chickadee, Robin, Slate-colored Junco) are seen in good numbers for at least 6 months of the year.
+# All the species(American Goldfinch, Black-capped Chickadee, Catbird, Field Sparrow, Robin, Slate-colored Junco) are seen in good numbers for at least 6 months of the year.
 
-
-```{r}
-#Rough work (code to re-check above questions)
-#
-# Q1)
-# ByMonth %>%
-#   group_by(Species) %>%
-#   summarise(mont = n_distinct(Month))
-# 
-# Q2)
-# ByMonth %>%
-#   group_by(Species) %>%
-#   summarise(seas = n_distinct(Month)) %>%
-#   filter(seas < 6)
-# 
-# Q3)
-# ByMonth %>%
-#   group_by(Species) %>%
-#   summarise(months_present = n_distinct(Month)) %>%
-#   filter(months_present >= 6)
-
-```
 
