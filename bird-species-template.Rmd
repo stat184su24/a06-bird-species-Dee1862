@@ -1,7 +1,7 @@
 ---
 title: "Activity: Bird Species"
 author: "Deekshith Reddy Bhoomireddy"
-date: "DUE DATE "
+date: "24 July, 2024"
 output: html_notebook
 ---
 
@@ -21,10 +21,10 @@ data("OrdwayBirds", package = "dcData")
 
 
 # Show a few commands used to inspect the data set a few different ways
-summary("OrdwayBird")
-View(OrdwayBirds)
-head(OrdwayBirds, n = 5)
-tail(OrdwayBirds, n = 5)
+summary("OrdwayBird") #Gives a summary of the dataset.
+View(OrdwayBirds) #Opens the dataset.
+head(OrdwayBirds, n = 5) #Displays the first 5 rows of the dataset.
+tail(OrdwayBirds, n = 5) #Displays the last 5 rows of the dataset.
 
 
 ```
@@ -41,14 +41,14 @@ Before we begin, the book gives us some instructions to select a few key variabl
 # Get the data table & clean up dates (see Data Computing eBook)
 OrdwayBirds <-
   OrdwayBirds %>%
-  select( SpeciesName, Month, Day ) %>%
-  mutate( Month = as.numeric(as.character(Month)), 
-          Day = as.numeric(as.character(Day)))
+  select(SpeciesName, Month, Day ) %>%
+  mutate(Month = as.numeric(as.character(Month)), #Creates a new column with Month as a numeric character.
+          Day = as.numeric(as.character(Day))) #Creates a new column with Day as a numeric character.
 
 
 # Inspect resulting data
-View(OrdwayBirds)
-summary("OrdwayBird")
+View(OrdwayBirds) #Opens the dataset.
+summary("OrdwayBird") #Gives a summary of the dataset.
 
 ```
 
@@ -62,12 +62,13 @@ summary("OrdwayBird")
 ```{r}
 # unique species in original data (including mis-spellings)
 OrdwayBirds %>%
-  n_distinct("SpeciesName", na.rm = TRUE)
+  n_distinct("SpeciesName")
 
 
 # unique species in the clean list
-
-
+data("OrdwaySpeciesNames", package = "dcData")
+OrdwaySpeciesNames %>%
+  n_distinct("SpeciesNameCleaned")
 
 ```
 
@@ -79,19 +80,21 @@ OrdwayBirds %>%
 
 ```{r}
 # inspect OrdwaySpeciesNames
-
+View(OrdwaySpeciesNames)
+summary(OrdwaySpeciesNames)
 
 # inner join
 Corrected <-
   OrdwayBirds %>%
-  inner_join( OrdwaySpeciesNames ) %>% 
+  full_join(OrdwaySpeciesNames) %>% 
   select( Species = SpeciesNameCleaned, Month, Day ) %>%
   na.omit()  # cleaned up the missing ones
 
 
 
 # inspect the data after the join
-View(OrdwayBirds)
+View(Corrected)
+summary(Corrected)
 
 ```
 
@@ -105,7 +108,9 @@ We want to identify the top 5-6 bird species sighted at the Katherine Ordway Nat
 
 species_desc <-
   OrdwayBirds %>%
-  count(SpeciesName, sort = TRUE)
+  group_by(SpeciesName) %>%
+  summarise(count = n()) %>%
+  arrange(desc(count))
 
 
 # a hint in the text book recommends displaying the top 10 species to choose our threshold
@@ -114,7 +119,12 @@ head(species_desc, n = 10)
 
 # define a sightings threshold; produce a table with only birds belonging to major species
 
+sightings_threshold <- 600
+Majors <- 
+  species_desc %>%
+  filter(count >= sightings_threshold)
 
+View(Majors)
 
 
 ```
@@ -126,7 +136,12 @@ We now want to produce a month-by-month count for each of the major species, and
 
 ```{r}
 # prepare glyph-ready data table called `ByMonth`
+ByMonth <- 
+  Corrected %>%
+  filter(Species %in% Majors$SpeciesName) %>%
+  count(Species, Month)
 
+View(ByMonth)
 
 
 ```
@@ -136,38 +151,62 @@ Now use the ggplot template below to generate the desired graph. (Remark you can
 
 
 ```{r}
+#Orders the Months in correct order.
+ByMonth$Month <- factor(ByMonth$Month, levels = 1:12)
+
 # ggplot commands
 
-ByMonth %>% 
-  ggplot(aes(x = Month, y = count, color = Species)) + 
-  geom_line()
-
-ByMonth %>% ggplot(aes(x = Month,y = count ,fill = Species)) +
-  geom_bar(stat = 'identity',position = 'stack', width = .9) 
+ggplot(ByMonth, aes(x = Month, y = n, group = Species)) +
+  geom_line() +
+  geom_point() +
+  facet_wrap(~ Species) +
+  labs(title = "Monthly Sighting Of Major Bird Species",
+       x = "Months",
+       y = "Number Of Sightings")
 
 ```
 
 According to the graph, we can answer the questions posed:
 
 ##### 1. Which species are present year-round?  
-
+# American Goldfinch and Black-capped Chickadee are present year-round.
 
 
 ##### 2. Which species are migratory, that is, primarily present in one or two seasons?
-
-
+# None of these species are migratory
 
 
 ##### 3. What is the peak month for each major species? (bullet list)
-
-
+# Peack month for each of the species:
+# American Goldfinch: 10			
+# Black-capped Chickadee: 11			
+# Robin: 5			
+# Slate-colored Junco: 10
 
 
 ##### 4. Which major species are seen in good numbers for at least 6 months of the year?
-
+# All the species(American Goldfinch, Black-capped Chickadee, Robin, Slate-colored Junco) are seen in good numbers for at least 6 months of the year.
 
 
 ```{r}
+#Rough work (code to re-check above questions)
+#
+# Q1)
+# ByMonth %>%
+#   group_by(Species) %>%
+#   summarise(mont = n_distinct(Month))
+# 
+# Q2)
+# ByMonth %>%
+#   group_by(Species) %>%
+#   summarise(seas = n_distinct(Month)) %>%
+#   filter(seas < 6)
+# 
+# Q3)
+# ByMonth %>%
+#   group_by(Species) %>%
+#   summarise(months_present = n_distinct(Month)) %>%
+#   filter(months_present >= 6)
 
 ```
 
